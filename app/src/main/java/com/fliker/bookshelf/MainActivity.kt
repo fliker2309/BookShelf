@@ -1,63 +1,57 @@
 package com.fliker.bookshelf
 
 import android.os.Bundle
-import android.util.Log
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Surface
 import androidx.compose.ui.Modifier
-import androidx.lifecycle.lifecycleScope
-import com.fliker.bookshelf.data.remote.BooksApi
+import androidx.navigation.compose.NavHost
+import androidx.navigation.compose.composable
+import androidx.navigation.compose.rememberNavController
+import com.fliker.bookshelf.presentation.Screen
+import com.fliker.bookshelf.presentation.detail.BookDetailScreen
 import com.fliker.bookshelf.presentation.home.HomeScreen
 import com.fliker.bookshelf.ui.theme.BookShelfTheme
 import dagger.hilt.android.AndroidEntryPoint
-import kotlinx.coroutines.launch
-import javax.inject.Inject
 
-@AndroidEntryPoint // 1. Эта метка обязательна, чтобы Hilt мог сюда что-то внедрять
+@AndroidEntryPoint
 class MainActivity : ComponentActivity() {
-
-    // 2. Мы говорим: "Hilt, дай мне сюда готовый экземпляр API".
-    // Нам не нужно писать = Retrofit.Builder()..., мы это уже сделали в Module.
-    @Inject
-    lateinit var api: BooksApi
-
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-
-        // 3. Запускаем корутину (поток), потому что сеть нельзя трогать в главном потоке
-        lifecycleScope.launch {
-            try {
-                Log.d("BOOK_TEST", "🚀 Начинаем запрос к Google...")
-
-                // 4. Вызываем наш метод поиска
-                val response = api.searchBooks("Harry Potter")
-
-                // 5. Если книги пришли, перебираем их
-                response.items?.forEach { book ->
-                    Log.d("BOOK_TEST", "📚 Книга: ${book.volumeInfo.title}")
-                }
-
-                Log.d("BOOK_TEST", "✅ Запрос завершен успешно!")
-
-            } catch (e: Exception) {
-                // 6. Если что-то сломалось (нет инета, ошибка сервера)
-                Log.e("BOOK_TEST", "❌ Ошибка: ${e.message}")
-                e.printStackTrace()
-            }
-        }
-
         setContent {
-            BookShelfTheme() {
-             Surface(
-                 modifier = Modifier.fillMaxSize(),
-                 color = MaterialTheme.colorScheme.background
-             ) {
-                 HomeScreen()
-             }
+            BookShelfTheme {
+                Surface(
+                    modifier = Modifier.fillMaxSize(),
+                    color = MaterialTheme.colorScheme.background
+                ) {
+                    // 1. Создаем контроллер навигации
+                    val navController = rememberNavController()
 
+                    // 2. Настраиваем "хост" (карту переходов)
+                    NavHost(
+                        navController = navController,
+                        startDestination = Screen.Home.route // Стартовый экран
+                    ) {
+                        // Экран 1: Список книг
+                        composable(route = Screen.Home.route) {
+                            HomeScreen(
+                                onBookClick = { bookId ->
+                                    // Переходим на детали
+                                    navController.navigate(Screen.Detail.createRoute(bookId))
+                                }
+                            )
+                        }
+
+                        // Экран 2: Детали
+                        composable(route = Screen.Detail.route) { backStackEntry ->
+                            // Достаем ID из аргументов навигации
+                            val bookId = backStackEntry.arguments?.getString("bookId") ?: ""
+                            BookDetailScreen(bookId = bookId)
+                        }
+                    }
+                }
             }
         }
     }

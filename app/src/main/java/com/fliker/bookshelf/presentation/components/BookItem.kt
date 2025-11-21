@@ -21,16 +21,18 @@ import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import coil.compose.AsyncImage
 
-
 @Composable
 fun BookItem(
     title: String,
     authors: String,
     imageUrl: String?,
     rating: Double,
+    onClick: () -> Unit,
     modifier: Modifier = Modifier
 ) {
-    Card(modifier = modifier
+    Card(
+        onClick = onClick,
+        modifier = modifier
         .fillMaxWidth()
         .height(120.dp),
         elevation = CardDefaults.cardElevation(defaultElevation = 4.dp)

@@ -15,6 +15,7 @@ import com.fliker.bookshelf.presentation.components.BookItem
 
 @Composable
 fun HomeScreen(
+    onBookClick : (String) -> Unit,
     viewModel: HomeViewModel = hiltViewModel() // Магия Hilt создает ViewModel сама
 ) {
     val state = viewModel.state.value
@@ -60,7 +61,8 @@ fun HomeScreen(
                             title = book.title,
                             authors = book.authors,
                             imageUrl = book.imageUrl,
-                            rating = book.averageRating
+                            rating = book.averageRating,
+                            onClick = { onBookClick(book.id) }
                         )
                     }
                 }
