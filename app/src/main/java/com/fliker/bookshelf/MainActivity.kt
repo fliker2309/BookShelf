@@ -46,9 +46,7 @@ class MainActivity : ComponentActivity() {
 
                         // Экран 2: Детали
                         composable(route = Screen.Detail.route) { backStackEntry ->
-                            // Достаем ID из аргументов навигации
-                            val bookId = backStackEntry.arguments?.getString("bookId") ?: ""
-                            BookDetailScreen(bookId = bookId)
+                         BookDetailScreen()
                         }
                     }
                 }
