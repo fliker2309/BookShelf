@@ -9,10 +9,12 @@ import androidx.compose.material3.*
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.shadow
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.text.font.FontStyle
 import androidx.compose.ui.text.font.FontWeight
+import coil.compose.rememberAsyncImagePainter
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.hilt.navigation.compose.hiltViewModel
@@ -58,11 +60,16 @@ fun BookDetailScreen(
                     contentAlignment = Alignment.Center
                 ) {
                     AsyncImage(
-                        model = book.imageUrl ?: "https://via.placeholder.com/150",
+                        model = book.highResImageUrl, // 1. Цель: Грузим HD
                         contentDescription = null,
+
+                        placeholder = rememberAsyncImagePainter(model = book.imageUrl),
+                        error = rememberAsyncImagePainter(model = book.imageUrl),
+
                         modifier = Modifier
                             .height(280.dp)
-                            .width(180.dp), // Фиксированный размер как у книги
+                            .width(180.dp)
+                            .shadow(8.dp),
                         contentScale = ContentScale.Crop
                     )
                 }

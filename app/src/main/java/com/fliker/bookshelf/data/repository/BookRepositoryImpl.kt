@@ -13,15 +13,7 @@ class BookRepositoryImpl @Inject constructor(
         val response = api.searchBooks(query)
 
         return response.items?.map { dto ->
-            Book(
-                id = dto.id,
-                title = dto.volumeInfo.title,
-                authors = dto.volumeInfo.authors?.joinToString(", ") ?: " ",
-                imageUrl = dto.volumeInfo.imageLinks?.thumbnail?.replace("http:", "https:"),
-                description = dto.volumeInfo.description ?: " ",
-                pageCount = dto.volumeInfo.pageCount ?: 0,
-                averageRating = dto.volumeInfo.averageRating ?: 0.0
-            )
+            toBook(dto)
         } ?: emptyList()
     }
 
@@ -40,8 +32,12 @@ class BookRepositoryImpl @Inject constructor(
             id = dto.id,
             title = dto.volumeInfo.title,
             authors = dto.volumeInfo.authors?.joinToString(", ") ?: "",
-            imageUrl = dto.volumeInfo.imageLinks?.thumbnail?.replace("http:", "https:")
-                ?: dto.volumeInfo.imageLinks?.smallThumbnail?.replace("http:", "https:"),
+            imageUrl = dto.volumeInfo.imageLinks?.thumbnail
+                ?.replace("http:", "https:"),
+            highResImageUrl = dto.volumeInfo.imageLinks?.thumbnail
+                ?.replace("http:", "https:")
+                ?.replace("&zoom=1", "&zoom=0") // ZOOM 0 = High Quality временно убрал, т.к. иногда показывает image not аvailable
+                ?.replace("&edge=curl", ""),
             description = dto.volumeInfo.description
                 ?: "", // Тут часто приходит HTML, потом почистим
             pageCount = dto.volumeInfo.pageCount ?: 0,
