@@ -23,7 +23,6 @@ class BookDetailViewModel @Inject constructor(
         // Как только ViewModel создается, мы достаем "bookId" из аргументов
         // "bookId" должен совпадать с тем, что мы писали в Screen.Detail: "detail_screen/{bookId}"
         val bookId = savedStateHandle.get<String>("bookId")
-
         if (bookId != null) {
             loadBook(bookId)
         }
@@ -33,20 +32,46 @@ class BookDetailViewModel @Inject constructor(
         viewModelScope.launch {
             _state.value = _state.value.copy(isLoading = true)
 
-            val book = repository.getBookDetails(id)
 
-            if (book != null) {
+            val apiBook = repository.getBookDetails(id)
+
+            val dbBook = repository.getSavedBook(id)
+
+            val bookToShow = apiBook ?: dbBook
+
+            if (bookToShow != null) {
                 _state.value = _state.value.copy(
                     isLoading = false,
-                    book = book,
+                    book = bookToShow,
+                    isSaved = dbBook != null,
                     error = null
                 )
             } else {
                 _state.value = _state.value.copy(
                     isLoading = false,
-                    error = "Не удалось загрузить книгу"
+                    error = "Can't show a book"
                 )
+            }
+
+            // Метод для кнопки "Сохранить/Удалить"
+
+        }
+    }
+
+    fun onSaveClick() {
+        val currentBook = _state.value.book ?: return
+
+        viewModelScope.launch {
+            if (_state.value.isSaved) {
+                // Если сохранено -> Удаляем
+                repository.deleteBook(currentBook.id)
+                _state.value = _state.value.copy(isSaved = false)
+            } else {
+                // Если не сохранено -> Сохраняем
+                repository.saveBook(currentBook)
+                _state.value = _state.value.copy(isSaved = true)
             }
         }
     }
 }
+// добавить кнопку в UI

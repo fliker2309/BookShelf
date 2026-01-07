@@ -1,5 +1,9 @@
 package com.fliker.bookshelf.di
 
+import android.app.Application
+import androidx.room.Room
+import com.fliker.bookshelf.data.local.BookDao
+import com.fliker.bookshelf.data.local.BooksDatabase
 import com.fliker.bookshelf.data.remote.BooksApi
 import com.fliker.bookshelf.data.repository.BookRepositoryImpl
 import com.fliker.bookshelf.domain.repository.BookRepository
@@ -26,10 +30,25 @@ object AppModule {
             .create(BooksApi::class.java) // Создаем сам API
     }
 
+    @Provides
+    @Singleton
+    fun provideBooksDatabase(app: Application): BooksDatabase {
+        return Room.databaseBuilder(
+            app,
+            BooksDatabase::class.java,
+            "books_db"
+        ).build()
+    }
 
     @Provides
     @Singleton
-    fun provideBookRepository(api: BooksApi) : BookRepository{
-        return BookRepositoryImpl(api)
+    fun provideBookDao(db: BooksDatabase): BookDao {
+        return db.dao
+    }
+
+    @Provides
+    @Singleton
+    fun provideBookRepository(api: BooksApi, dao: BookDao): BookRepository {
+        return BookRepositoryImpl(api, dao)
     }
 }
